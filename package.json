@@ -9,7 +9,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "express": "^4.17.1",
     "square": "^11.0.0"
   },
-  "type": "module"
+  "comment-type": "module"
 }
