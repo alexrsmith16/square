@@ -29,7 +29,7 @@ function onClickGo() {
 	jResults.html("<span>loading...</span>")
 	$("#goButton").attr("disabled", true)
 	$.ajax({
-		url: "https://us-central1-square-a2128.cloudfunctions.net/test",
+		url: "/test",
 		success: result => {
 			console.log(result)
 			let html = "<table>"
