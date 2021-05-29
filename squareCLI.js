@@ -206,7 +206,7 @@ async function testPayments() {
 	}
 }
 
-getOrders("9408KRRF2VWN2", 18);
+// getOrders("9408KRRF2VWN2", 18);
 // getOrders("3PHRKCNFYTXR0");
 
 exports.getOrders = getOrders;
