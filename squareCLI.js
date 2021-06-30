@@ -46,6 +46,9 @@ async function getOrders(locationID, startDay, endDay) {
 			limit: 1000
 		});
 	
+		if (response.result.orders == undefined || response.result.orders == null) {
+			return "No data found for date range selected";
+		}
 		let orders = response.result.orders;
 
 		let total = BigInt(0);

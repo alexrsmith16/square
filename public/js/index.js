@@ -46,11 +46,17 @@ function onClickGo() {
 		url: "/test/" + requestBody.startDate + "/" + requestBody.endDate,
 		success: result => {
 			console.log(result)
-			let html = "<table>"
-			for (const [key, value] of Object.entries(result)) {
-				html += `<tr><td>${key}</td><td>${value}</td><tr>`
+			let html = ""
+			if (typeof result === "object") {
+				html += "<table>"
+				for (const [key, value] of Object.entries(result)) {
+					html += `<tr><td>${key}</td><td>${value}</td><tr>`
+				}
+				html += "</table>"
 			}
-			html += "</table>"
+			else {
+				html += `<h2>${result}</h2>`
+			}
 			$("#goButton").attr("disabled", false)
 			jResults.html(html)
 		},
