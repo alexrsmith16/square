@@ -8,6 +8,12 @@ $(`[type="date"]`).on("input", evt => {
 	let attribute = jControl.attr("data-attr")
 	let value = jControl.val()
 	$(`#${target}`).attr(attribute, value)
+	if (value != "" && $(`#${target}`).val() != "") {
+		goButtonEnabled(true);
+	}
+	else {
+		goButtonEnabled(false);
+	}
 })
 
 function init() {
@@ -24,12 +30,20 @@ function initDatePickers() {
 	$("#end, #start").attr("max", todayDateString)
 }
 
+function goButtonEnabled(enabled) {
+	$("#goButton").attr("disabled", !enabled);
+}
+
 function onClickGo() {
+	let requestBody = {
+		startDate: $("#start").val(),
+		endDate: $("#end").val()
+	}
 	let jResults = $("#results")
 	jResults.html("<span>loading...</span>")
 	$("#goButton").attr("disabled", true)
 	$.ajax({
-		url: "/test",
+		url: "/test/" + requestBody.startDate + "/" + requestBody.endDate,
 		success: result => {
 			console.log(result)
 			let html = "<table>"

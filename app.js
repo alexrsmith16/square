@@ -14,8 +14,11 @@ app.get('/', (req, res) => {
 	res.render('public')
 })
 
-app.get('/test', async (req, res) => {
-	let result = await square.getOrders("9408KRRF2VWN2", 18)
+app.get('/test/:from/:to', async (req, res) => {
+	console.log(req.params)
+	// let requestBody = JSON.parse(req.params)
+	// console.log(requestBody)
+	let result = await square.getOrders("9408KRRF2VWN2", req.params.from, req.params.to)
 	for (const [key, value] of Object.entries(result)) {
 		result[key] = (parseFloat(value) / 100.00).toFixed(2).toString()
 	}

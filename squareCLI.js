@@ -13,7 +13,7 @@ let today = new Date();
 let lastWeek = new Date();
 lastWeek.setDate(today.getDate() - 1)
 
-async function getOrders(locationID, day) {
+async function getOrders(locationID, startDay, endDay) {
 	try {
 		const response = await client.ordersApi.searchOrders({
 			locationIds: [
@@ -33,8 +33,8 @@ async function getOrders(locationID, day) {
 					},
 					dateTimeFilter: {
 						createdAt: {
-							startAt: "2021-05-" + day + "T00:00:00.000-07:00",
-							endAt: "2021-05-" + day + "T23:59:00.000-07:00"
+							startAt: startDay + "T00:00:00.000-07:00",
+							endAt: endDay + "T23:59:00.000-07:00"
 						}
 					}
 				},
