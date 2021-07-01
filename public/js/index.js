@@ -35,15 +35,16 @@ function goButtonEnabled(enabled) {
 }
 
 function onClickGo() {
-	let requestBody = {
-		startDate: $("#start").val(),
-		endDate: $("#end").val()
-	}
 	let jResults = $("#results")
 	jResults.html("<span>loading...</span>")
 	$("#goButton").attr("disabled", true)
 	$.ajax({
-		url: "/test/" + requestBody.startDate + "/" + requestBody.endDate,
+		url: "/test",
+		data: {
+			from: $("#start").val(),
+			to: $("#end").val(),
+			locations: '[1,2,3]'
+		},
 		success: result => {
 			console.log(result)
 			let html = ""

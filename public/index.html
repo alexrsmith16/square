@@ -11,9 +11,26 @@
 </head>
     <body>
         <div class="header">
-            <input type="date" id="start" data-target="end" data-attr="min"/>
-            <input type="date" id="end" data-target="start" data-attr="max"/>
-            <button id="goButton" onclick="onClickGo()" disabled>GO</button>
+            <div class="locations">
+                <h3>Locations</h3>
+                <!-- <select name="locations" id="locationSelect" multiple size="5">
+                    <option value="1">This Location 1</option>
+                    <option value="2">This Location 2</option>
+                    <option value="3">This Location 3</option>
+                    <option value="4">This Location 4</option>
+                    <option value="5">This Location 5</option>
+                </select> -->
+                <input type="radio" name="action" id="loganMortys" value="loganMortys" /><label>Logan Mortys</label>
+                <input type="radio" name="action" id="loganMortysTruck" value="loganMortysTruck" /><label>Logan Mortys Truck</label>
+            </div>
+            <div class="dates">
+                <button id="datesButton">Single Date</button>
+                <input type="date" id="start" data-target="end" data-attr="min"/>
+                <input type="date" id="end" data-target="start" data-attr="max"/>
+            </div>
+            <div>
+                <button id="goButton" onclick="onClickGo()" disabled>GO</button>
+            </div>
         </div>
         <div id="results"></div>
     </body>
