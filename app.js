@@ -15,13 +15,13 @@ app.get('/', (req, res) => {
 })
 
 app.get('/test', async (req, res) => {
-	console.log(req.query)
-	console.log(typeof req.query)
-	console.log(req.params)
 	// let requestBody = JSON.parse(req.params)
 	// console.log(requestBody)
-	let result = await square.getOrders("9408KRRF2VWN2", req.query.from, req.query.to)
+	let result = await square.getOrdersBruteForce("9408KRRF2VWN2", req.query.from, req.query.to)
 	if (typeof result ===  "object") {
+		if (Object.entries(result).length == 0) {
+			return "No data"
+		}
 		for (const [key, value] of Object.entries(result)) {
 			result[key] = (parseFloat(value) / 100.00).toFixed(2).toString()
 		}

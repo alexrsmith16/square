@@ -95,7 +95,7 @@ async function getOrders(locationID, startDay, endDay) {
 				let total = BigInt(0);
 				it.discounts.forEach(item => {
 					if (item.amountMoney == undefined) {
-						console.log("discount weird: " + index);
+						console.log("discount weird: " + it.id);
 					}
 					total += BigInt(item.appliedMoney.amount)}
 				);
@@ -105,10 +105,13 @@ async function getOrders(locationID, startDay, endDay) {
 			if (it.lineItems != undefined) {
 				let total = BigInt(0);
 				it.lineItems.forEach(item => {total += BigInt(item.grossSalesMoney.amount)});
+				if (total == BigInt(2500)) {
+					console.log("it's 25: " + it.id)
+				}
 				allGrossSales += total;
 			}
 			else {
-				console.log("no lineItems: " + index);
+				console.log("no lineItems: " + it.id);
 			}
 			
 			if (it.totalMoney != undefined) {
@@ -161,6 +164,99 @@ async function getOrders(locationID, startDay, endDay) {
 	}
 }
 
+async function getOrders2(locationID, startDay, endDay) {
+	
+	try {
+		const response = await client.ordersApi.searchOrders({
+			locationIds: [
+				locationID
+			],
+			query: {
+				filter: {
+					stateFilter: {
+					  states: [
+						'COMPLETED'
+					  ]
+					},
+					dateTimeFilter: {
+						closedAt: {
+							startAt: startDay + "T06:00:00.000",
+							endAt: endDay + "T06:00:00.000"
+						}
+					}
+				},
+				sort: {
+					sortField: 'CLOSED_AT',
+					sortOrder: 'ASC'
+				}
+			},
+			limit: 1000
+		});
+
+		if (response.result.orders == undefined || response.result.orders == null) {
+			return "No data found for date range selected";
+		}
+		let orders = response.result.orders;
+
+		let netSales = BigInt(0);
+		let totalTenders = BigInt(0);
+		let totalFee = BigInt(0);
+		let totalRefunds = BigInt(0);
+
+		let grossSales = BigInt(0);
+
+		orders.forEach(order => {
+			if (order.state != "COMPLETED") {
+				console.log("completed Lie: " + order.id);
+
+				grossSales = addGross(grossSales, order);
+			}
+
+			if (order.tenders != undefined && order.tenders.length > 0) {
+				order.tenders.forEach(tend => {
+					totalTenders += BigInt(tend.amountMoney.amount);
+					if (tend.processingFeeMoney != undefined) {
+						totalFee += BigInt(tend.processingFeeMoney.amount);
+					}
+				});
+
+				grossSales = addGross(grossSales, order);
+			}
+
+			if (order.refunds != undefined && order.refunds.length > 0) {
+				console.log("refund: " + order.id);
+				order.refunds.forEach(ref => {
+					totalRefunds += BigInt(ref.amountMoney.amount);
+					netSales -= BigInt(ref.amountMoney.amount)
+				});
+
+				grossSales = addGross(grossSales, order);
+			}
+
+			netSales += BigInt(order.totalMoney.amount);
+		});
+
+		return({
+			netSales, totalTenders, totalFee, totalRefunds, grossSales
+		});
+	}
+	catch (error) {
+		console.log(error);
+	}
+}
+
+function addGross(gross, order) {
+	if (order.totalMoney != undefined) {
+		gross += order.totalMoney.amount
+	}
+	if (order.tipMoney != undefined) {
+		gross += order.tipMoney.amount
+	}
+	if (order.discountMoney != undefined) {
+		gross += order.discountMoney.amount;
+	}
+	return gross;
+}
 
 async function getPayments() {
 	try {
@@ -209,7 +305,96 @@ async function testPayments() {
 	}
 }
 
+let globalTotals = {};
+async function getOrdersBruteForce(locationID, startDay, endDay) {
+	try {
+		let response = await query(locationID, startDay, endDay)
+		if (response.result.orders == undefined || response.result.orders == null) {
+			return "No data found for date range selected";
+		}
+		let orders = response.result.orders;
+		console.log("FOUND: " + orders.length);
+
+		let totalItems = 0;
+		orders.forEach(order => {
+			processObject(order, "")
+			if (order.lineItems != undefined) totalItems += order.lineItems.length;
+		})
+		console.log("ITEMS: " + totalItems);
+
+		return globalTotals;	
+	} catch (error) {
+		console.log(error)
+	}
+}
+
+function processObject(it, parent) {
+	for (const [key, value] of Object.entries(it)) {
+		if (key == "amount") {
+			if (globalTotals[parent] != undefined) {
+				globalTotals[parent] += BigInt(value);
+			}
+			else {
+				globalTotals[parent] = BigInt(value);
+			}
+			return;
+		}
+		switch (typeof value) {
+			case "object":
+				if (Array.isArray(value)) {
+					value.forEach(item => {
+						processObject(item, parent + "." + key)
+					})
+				}
+				else {
+					processObject(value, parent + "." + key)
+				}
+				break;
+			case "string":
+			case "int":
+			case "bigint":
+			case "number":
+				break;
+			default:
+				console.log("unhandled key type: " + typeof value + "\nid: " + it.id);
+				break;
+		}
+	}
+}
+
+async function query(locationID, startDay, endDay) {
+	const response = await client.ordersApi.searchOrders({
+		locationIds: [
+			locationID
+		],
+		query: {
+			filter: {
+				stateFilter: {
+          states: [
+            'COMPLETED'
+          ]
+				},
+				dateTimeFilter: {
+					closedAt: {
+						startAt: startDay + "T10:00:00.000Z",
+						endAt: endDay + "T06:00:00.000Z"
+					}
+				}
+			},
+			sort: {
+				sortField: 'CLOSED_AT',
+				sortOrder: 'ASC'
+			}
+		},
+		limit: 1000
+	});
+
+	return response;
+}
+
 // getOrders("9408KRRF2VWN2", 18);
 // getOrders("3PHRKCNFYTXR0");
 
 exports.getOrders = getOrders;
+exports.getOrders2 = getOrders2;
+exports.getOrdersBruteForce = getOrdersBruteForce;
